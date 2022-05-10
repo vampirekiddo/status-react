@@ -1,9 +1,9 @@
-{ lib, stdenv, utils, callPackage, buildGo116Package
+{ lib, stdenv, utils, callPackage, buildGo116Package, removeReferencesTo
 , go, androidPkgs, openjdk, gomobile, xcodeWrapper
 # object with source attributes
 , meta, source
 , platform ? "android"
-, architectures ? [ "arm64" "arm" "x86" ]
+, targets ? [ "android/arm" "android/arm64" ]
 , goBuildFlags ? [ ]
 , goBuildLdFlags ? [ ]
 , outputFileName ? "status-go-${source.shortRev}-${platform}.aar" }:
@@ -18,11 +18,8 @@ let
     getAttr attrValues makeBinPath optional;
 
   removeReferences = [ go ];
-  removeExpr = refs: ''remove-references-to ${concatMapStrings (ref: " -t ${ref}") refs}'';
-
-  # formatted for use with -target
-  targetArchs = map (a: "${platform}/${a}") architectures;
-
+  removeExpr = refs:
+    "${removeReferencesTo}/bin/remove-references-to ${concatMapStrings (ref: " -t ${ref}") refs}";
 in buildGo116Package {
   pname = source.repo;
   version = "${source.cleanVersion}-${source.shortRev}-${platform}";
@@ -77,10 +74,10 @@ in buildGo116Package {
     runHook preBuild
     runHook renameImports
 
-    echo -e "\nBuilding for targets: ${concatStringsSep "," targetArchs}\n"
+    echo -e "\nBuilding for targets: ${concatStringsSep "," targets}\n"
 
-    ${gomobile}/bin/gomobile bind \
-      -target=${concatStringsSep "," targetArchs} \
+    ${gomobile}/bin/gomobile bind -v \
+      -target=${concatStringsSep "," targets} \
       -ldflags="${CGO_LDFLAGS}" \
       ${optionalString (platform == "android") "-androidapi 23"} \
       ${optionalString (platform == "ios") "-iosversion=8.0"} \
@@ -95,7 +92,9 @@ in buildGo116Package {
 
   # replace hardcoded paths to go package in /nix/store, otherwise Nix will fail the build
   fixupPhase = ''
-    find $out -type f -exec ${removeExpr removeReferences} '{}' + || true
+    set -x
+    find -print $out -type f -exec ${removeExpr removeReferences} {} +
+    set +x
   '';
 
   installPhase = ''

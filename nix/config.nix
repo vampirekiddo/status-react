@@ -18,4 +18,7 @@
 
   # Android SDK requires an accepted license
   android_sdk.accept_license = true;
+
+  # Temporary fix for `auto-patchelf-hook` not working on Darwin.
+  #allowUnsupportedSystem = true;
 }
