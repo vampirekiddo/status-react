@@ -387,7 +387,7 @@
             @(re-frame/subscribe [:chats/current-chat-chat-view])
             max-bottom-space (max @bottom-space @panel-space)]
         [:<>
-         [topbar]
+        ;;  [topbar]
          [connectivity/loading-indicator]
          (when chat-id
            (if group-chat
