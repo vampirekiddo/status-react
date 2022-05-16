@@ -41,17 +41,30 @@
                        :mnemonic nil
                        {}))
 
+(defn augment-synchronized-stickers
+  "Add 'url' parameter to stickers that are synchronized from other devices.
+   It is not sent from aanother devices but we have it in our db."
+  [synced-stickers stickers-from-db]
+  (mapv (fn [sticker-synced] (assoc sticker-synced :url (as-> stickers-from-db vvv
+                                                          (get vvv (:packID sticker-synced))
+                                                          (:stickers vvv)
+                                                          (filter (fn [sticker-db] (= (:hash sticker-db) (:hash sticker-synced))) vvv)
+                                                          (first vvv)
+                                                          (:url vvv)))) synced-stickers))
+
 (fx/defn optimistic
   [{:keys [db] :as cofx} setting setting-value]
   (let [current-multiaccount (:multiaccount db)
         setting-value (if (= :currency setting)
                         (keyword setting-value)
                         setting-value)
-        db (if (= :stickers/packs-installed setting)
-             ;;updating :stickers/packs for installed stickers
-             (let [packs-installed-keys (keys (js->clj setting-value))]
-               (reduce #(assoc-in %1 [:stickers/packs %2 :status] constants/sticker-pack-status-installed) db packs-installed-keys))
-             db)]
+        db  (case setting
+              :stickers/packs-installed
+              (let [packs-installed-keys (keys (js->clj setting-value))]
+                (reduce #(assoc-in %1 [:stickers/packs %2 :status] constants/sticker-pack-status-installed) db packs-installed-keys))
+              :stickers/recent-stickers
+              (assoc db :stickers/recent-stickers (augment-synchronized-stickers (js->clj setting-value :keywordize-keys true) (:stickers/packs db)))
+              db)]
     {:db (if setting-value
            (assoc-in db [:multiaccount setting] setting-value)
            (update db :multiaccount dissoc setting))}))
