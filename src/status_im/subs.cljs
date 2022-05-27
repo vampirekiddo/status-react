@@ -265,6 +265,10 @@
 (reg-root-key-sub :wallet-connect-legacy/sessions :wallet-connect-legacy/sessions)
 (reg-root-key-sub :wallet-connect/session-managed :wallet-connect/session-managed)
 
+; Testing
+
+(reg-root-key-sub :messenger/started? :messenger/started?)
+
 (re-frame/reg-sub
  :communities
  :<- [:raw-communities]
