@@ -3,7 +3,7 @@
     "_comment": "Instead use: scripts/update-status-go.sh <rev>",
     "owner": "status-im",
     "repo": "status-go",
-    "version": "v0.100.0",
-    "commit-sha1": "1bfde4c4cc69292875ae9fdc41a8b4bd29e95a7a",
-    "src-sha256": "1nkk7dsqz1x31n305p33jdwpqr9bm7ajkqs3khq5l4ag3njagbrh"
+    "version": "feat/remove-explicit-group-chat-join-activity",
+    "commit-sha1": "fb2136732926c4d0124f799d14161fe6ed7499c7",
+    "src-sha256": "1cz23xkiq2ypy6k46sd74ikai8dinnm9cibmlid6j6vjzdqckf7g"
 }
